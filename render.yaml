@@ -1,0 +1,49 @@
+# Render Blueprint: backend (web service) + frontend (static site).
+# Secrets are NOT stored here: Render asks for every "sync: false" value when you create the Blueprint.
+services:
+  - type: web
+    name: neonboost-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: APP_URL          # this backend's public URL, e.g. https://neonboost-backend.onrender.com
+        sync: false
+      - key: FRONTEND_URL     # your site URL (onrender.com address for now, later your domain)
+        sync: false
+      - key: BANK_BOG_ACCOUNT
+        value: GE58BG0000000499190963
+      - key: TBC_BANK_ACCOUNT
+        value: GE56TB7484345064300134
+      - key: SMM_API_URL
+        value: https://smmcost.com/api/v2
+      - key: SMM_API_KEY
+        sync: false
+
+  - type: web
+    name: neonboost-frontend
+    runtime: static
+    buildCommand: npm install && npm run build:prod
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL     # the backend URL above, no trailing slash. Baked in at build time.
+        sync: false
+    routes:
+      - type: rewrite         # single-page app: every path serves index.html
+        source: /*
+        destination: /index.html
